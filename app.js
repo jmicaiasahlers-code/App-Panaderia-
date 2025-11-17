@@ -1,7 +1,10 @@
 // ============================================
-// GESTIÓN DE ALMACENAMIENTO LOCAL
+// GESTIÓN DE ALMACENAMIENTO - FIREBASE
 // ============================================
 
+import FirebaseStorageManager from './firebase-storage.js';
+
+// Mantener StorageManager original como fallback
 class StorageManager {
     constructor() {
         this.init();
@@ -98,17 +101,52 @@ class StorageManager {
 
 class AppPanaderia {
     constructor() {
-        this.storage = new StorageManager();
+        this.storage = new FirebaseStorageManager();
         this.currentModule = 'dashboard';
-        this.init();
+        this.initAsync();
+    }
+
+    async initAsync() {
+        try {
+            // Mostrar indicador de carga
+            this.mostrarCargando(true);
+            
+            // Inicializar Firebase
+            await this.storage.init();
+            
+            // Inicializar la aplicación
+            this.setupEventListeners();
+            this.initTheme();
+            this.setFechaActual();
+            await this.cargarRegistros();
+            this.actualizarDashboard();
+            
+            // Ocultar indicador de carga
+            this.mostrarCargando(false);
+        } catch (error) {
+            console.error('Error al inicializar la aplicación:', error);
+            
+            let mensaje = 'Error al conectar con Firebase. ';
+            if (error.code === 'failed-precondition') {
+                mensaje += '\n\n⚠️ Firestore no está habilitado.\n\nPor favor:\n1. Ve a Firebase Console\n2. Crea la base de datos Firestore\n3. Recarga la página\n\nURL: https://console.firebase.google.com/project/app-panaderia--gestion/firestore';
+            } else {
+                mensaje += 'Usando modo sin conexión.\n\nLos datos se guardarán localmente en este dispositivo.';
+            }
+            
+            alert(mensaje);
+            this.mostrarCargando(false);
+        }
+    }
+
+    mostrarCargando(mostrar) {
+        const loader = document.getElementById('loading-indicator');
+        if (loader) {
+            loader.style.display = mostrar ? 'flex' : 'none';
+        }
     }
 
     init() {
-        this.setupEventListeners();
-        this.initTheme();
-        this.setFechaActual();
-        this.cargarRegistros();
-        this.actualizarDashboard();
+        // Método vacío para compatibilidad
     }
 
     setupEventListeners() {
@@ -320,7 +358,7 @@ class AppPanaderia {
         });
     }
 
-    guardarRegistro() {
+    async guardarRegistro() {
         const tipo = document.getElementById('tipo').value;
         const categoria = document.getElementById('categoria').value;
         const descripcion = document.getElementById('descripcion').value;
@@ -340,90 +378,95 @@ class AppPanaderia {
             fecha
         };
 
-        this.storage.agregarRegistro(registro);
+        try {
+            await this.storage.agregarRegistro(registro);
 
-        // Guardar valores antes de limpiar
-        const fechaActual = document.getElementById('fecha').value;
-        const tipoActual = document.getElementById('tipo').value;
-        const categoriaActual = document.getElementById('categoria').value;
+            // Guardar valores antes de limpiar
+            const fechaActual = document.getElementById('fecha').value;
+            const tipoActual = document.getElementById('tipo').value;
+            const categoriaActual = document.getElementById('categoria').value;
 
-        // Limpiar formulario
-        document.getElementById('formRegistro').reset();
-        
-        // Restaurar tipo y fecha
-        document.getElementById('tipo').value = tipoActual;
-        document.getElementById('fecha').value = fechaActual;
-        
-        // Actualizar categorías para el tipo seleccionado
-        this.actualizarCategoriasSelect();
-        
-        // Verificar si el usuario cambió manualmente el orden (flag en localStorage)
-        const ordenCambiadoManualmente = localStorage.getItem('ordenCambiadoManualmente') === 'true';
-        
-        // Obtener categorías usadas en el día anterior
-        const data = this.storage.getData();
-        const fechaAnterior = new Date(fechaActual);
-        fechaAnterior.setDate(fechaAnterior.getDate() - 1);
-        const fechaAnteriorStr = fechaAnterior.toISOString().split('T')[0];
-        
-        const registrosDiaAnterior = data.registros.filter(r => 
-            r.fecha === fechaAnteriorStr && r.tipo === tipoActual
-        );
-        
-        // Obtener lista ordenada de categorías del día anterior
-        const categoriasUsadasAyer = [];
-        const categoriasVistas = new Set();
-        
-        registrosDiaAnterior.forEach(r => {
-            if (!categoriasVistas.has(r.categoria)) {
-                categoriasUsadasAyer.push(r.categoria);
-                categoriasVistas.add(r.categoria);
-            }
-        });
-        
-        // Seleccionar la siguiente categoría
-        const selectCategoria = document.getElementById('categoria');
-        let siguienteCategoriaId = null;
-        
-        // Si el orden fue cambiado manualmente, usar siempre el listado general
-        if (ordenCambiadoManualmente) {
-            const opciones = Array.from(selectCategoria.options).filter(opt => opt.value !== '');
-            if (opciones.length > 0) {
-                const indiceActual = opciones.findIndex(opt => opt.value === categoriaActual);
-                const siguienteIndice = (indiceActual + 1) % opciones.length;
-                siguienteCategoriaId = opciones[siguienteIndice].value;
-            }
-        } else if (categoriasUsadasAyer.length > 0) {
-            // Usar el orden del día anterior solo si no se ha cambiado manualmente
-            const indiceEnAyer = categoriasUsadasAyer.indexOf(categoriaActual);
-            if (indiceEnAyer !== -1 && indiceEnAyer + 1 < categoriasUsadasAyer.length) {
-                // Siguiente categoría del día anterior
-                siguienteCategoriaId = categoriasUsadasAyer[indiceEnAyer + 1];
+            // Limpiar formulario
+            document.getElementById('formRegistro').reset();
+            
+            // Restaurar tipo y fecha
+            document.getElementById('tipo').value = tipoActual;
+            document.getElementById('fecha').value = fechaActual;
+            
+            // Actualizar categorías para el tipo seleccionado
+            this.actualizarCategoriasSelect();
+            
+            // Verificar si el usuario cambió manualmente el orden (flag en localStorage)
+            const ordenCambiadoManualmente = localStorage.getItem('ordenCambiadoManualmente') === 'true';
+            
+            // Obtener categorías usadas en el día anterior
+            const data = this.storage.getData();
+            const fechaAnterior = new Date(fechaActual);
+            fechaAnterior.setDate(fechaAnterior.getDate() - 1);
+            const fechaAnteriorStr = fechaAnterior.toISOString().split('T')[0];
+            
+            const registrosDiaAnterior = data.registros.filter(r => 
+                r.fecha === fechaAnteriorStr && r.tipo === tipoActual
+            );
+            
+            // Obtener lista ordenada de categorías del día anterior
+            const categoriasUsadasAyer = [];
+            const categoriasVistas = new Set();
+            
+            registrosDiaAnterior.forEach(r => {
+                if (!categoriasVistas.has(r.categoria)) {
+                    categoriasUsadasAyer.push(r.categoria);
+                    categoriasVistas.add(r.categoria);
+                }
+            });
+            
+            // Seleccionar la siguiente categoría
+            const selectCategoria = document.getElementById('categoria');
+            let siguienteCategoriaId = null;
+            
+            // Si el orden fue cambiado manualmente, usar siempre el listado general
+            if (ordenCambiadoManualmente) {
+                const opciones = Array.from(selectCategoria.options).filter(opt => opt.value !== '');
+                if (opciones.length > 0) {
+                    const indiceActual = opciones.findIndex(opt => opt.value === categoriaActual);
+                    const siguienteIndice = (indiceActual + 1) % opciones.length;
+                    siguienteCategoriaId = opciones[siguienteIndice].value;
+                }
+            } else if (categoriasUsadasAyer.length > 0) {
+                // Usar el orden del día anterior solo si no se ha cambiado manualmente
+                const indiceEnAyer = categoriasUsadasAyer.indexOf(categoriaActual);
+                if (indiceEnAyer !== -1 && indiceEnAyer + 1 < categoriasUsadasAyer.length) {
+                    // Siguiente categoría del día anterior
+                    siguienteCategoriaId = categoriasUsadasAyer[indiceEnAyer + 1];
+                } else {
+                    // Volver a la primera categoría del día anterior
+                    siguienteCategoriaId = categoriasUsadasAyer[0];
+                }
             } else {
-                // Volver a la primera categoría del día anterior
-                siguienteCategoriaId = categoriasUsadasAyer[0];
+                // No hay registros del día anterior, usar lista general
+                const opciones = Array.from(selectCategoria.options).filter(opt => opt.value !== '');
+                if (opciones.length > 0) {
+                    const indiceActual = opciones.findIndex(opt => opt.value === categoriaActual);
+                    const siguienteIndice = (indiceActual + 1) % opciones.length;
+                    siguienteCategoriaId = opciones[siguienteIndice].value;
+                }
             }
-        } else {
-            // No hay registros del día anterior, usar lista general
-            const opciones = Array.from(selectCategoria.options).filter(opt => opt.value !== '');
-            if (opciones.length > 0) {
-                const indiceActual = opciones.findIndex(opt => opt.value === categoriaActual);
-                const siguienteIndice = (indiceActual + 1) % opciones.length;
-                siguienteCategoriaId = opciones[siguienteIndice].value;
+            
+            if (siguienteCategoriaId) {
+                selectCategoria.value = siguienteCategoriaId;
+                const nombreCategoria = this.getNombreCategoria(siguienteCategoriaId);
+                document.getElementById('descripcion').value = nombreCategoria;
             }
-        }
-        
-        if (siguienteCategoriaId) {
-            selectCategoria.value = siguienteCategoriaId;
-            const nombreCategoria = this.getNombreCategoria(siguienteCategoriaId);
-            document.getElementById('descripcion').value = nombreCategoria;
-        }
 
-        // Recargar tabla
-        this.cargarRegistros();
-        this.actualizarDashboard();
+            // Recargar tabla
+            await this.cargarRegistros();
+            this.actualizarDashboard();
 
-        alert('Registro guardado exitosamente');
+            alert('Registro guardado exitosamente');
+        } catch (error) {
+            console.error('Error al guardar registro:', error);
+            alert('Error al guardar el registro. Por favor intenta de nuevo.');
+        }
     }
 
     // Función auxiliar para parsear fechas en zona local
@@ -532,15 +575,20 @@ class AppPanaderia {
         if (thElements[4]) thElements[4].style.display = columnasOcultas.monto ? 'none' : '';
     }
 
-    eliminarRegistro(id) {
+    async eliminarRegistro(id) {
         if (confirm('¿Estás seguro de que deseas eliminar este registro?')) {
-            this.storage.eliminarRegistro(id);
-            this.cargarRegistros();
-            this.actualizarDashboard();
+            try {
+                await this.storage.eliminarRegistro(id);
+                await this.cargarRegistros();
+                this.actualizarDashboard();
+            } catch (error) {
+                console.error('Error al eliminar registro:', error);
+                alert('Error al eliminar el registro');
+            }
         }
     }
 
-    editarCampoRegistro(id, campo, elemento) {
+    async editarCampoRegistro(id, campo, elemento) {
         const data = this.storage.getData();
         const registro = data.registros.find(r => r.id === id);
         if (!registro) return;
@@ -561,15 +609,20 @@ class AppPanaderia {
         input.style.border = '2px solid var(--color-primary)';
         input.style.borderRadius = '4px';
 
-        const guardar = () => {
+        const guardar = async () => {
             const nuevoValor = campo === 'monto' ? parseFloat(input.value) : input.value;
             if (nuevoValor && nuevoValor !== registro[campo]) {
-                registro[campo] = nuevoValor;
-                this.storage.saveData(data);
-                this.cargarRegistros();
-                this.actualizarDashboard();
+                try {
+                    await this.storage.actualizarRegistro(id, campo, nuevoValor);
+                    await this.cargarRegistros();
+                    this.actualizarDashboard();
+                } catch (error) {
+                    console.error('Error al actualizar:', error);
+                    alert('Error al actualizar el registro');
+                    await this.cargarRegistros();
+                }
             } else {
-                this.cargarRegistros();
+                await this.cargarRegistros();
             }
         };
 
@@ -839,7 +892,7 @@ class AppPanaderia {
         this.actualizarCategoriasSelect();
     }
 
-    editarNombreCategoria(id, nombreDiv) {
+    async editarNombreCategoria(id, nombreDiv) {
         const data = this.storage.getData();
         const categoria = data.categorias.find(c => c.id === id);
 
@@ -854,7 +907,7 @@ class AppPanaderia {
         input.style.border = '2px solid var(--color-primary)';
         input.style.borderRadius = '4px';
 
-        const guardar = () => {
+        const guardar = async () => {
             const nuevoNombre = input.value.trim();
             if (nuevoNombre && nuevoNombre !== categoria.nombre) {
                 if (data.categorias.some(c => c.id !== id && c.nombre.toLowerCase() === nuevoNombre.toLowerCase() && c.tipo === categoria.tipo)) {
@@ -862,12 +915,19 @@ class AppPanaderia {
                     nombreDiv.textContent = categoria.nombre;
                     return;
                 }
-                categoria.nombre = nuevoNombre;
-                this.storage.saveData(data);
-                this.actualizarCategoriasSelect();
-                this.actualizarCategoriasFiltro();
+                try {
+                    await this.storage.actualizarCategoria(id, 'nombre', nuevoNombre);
+                    this.actualizarCategoriasSelect();
+                    this.actualizarCategoriasFiltro();
+                    nombreDiv.textContent = nuevoNombre;
+                } catch (error) {
+                    console.error('Error al actualizar:', error);
+                    alert('Error al actualizar la categoría');
+                    nombreDiv.textContent = categoria.nombre;
+                }
+            } else {
+                nombreDiv.textContent = categoria.nombre;
             }
-            nombreDiv.textContent = categoria.nombre;
         };
 
         input.addEventListener('blur', guardar);
@@ -883,21 +943,19 @@ class AppPanaderia {
         input.select();
     }
 
-    cambiarTipoCategoria(id, nuevoTipo) {
-        const data = this.storage.getData();
-        const categoria = data.categorias.find(c => c.id === id);
-
-        if (!categoria) return;
-
-        categoria.tipo = nuevoTipo;
-        this.storage.saveData(data);
-
-        this.actualizarCategoriasUI();
-        this.actualizarCategoriasSelect();
-        this.actualizarCategoriasFiltro();
+    async cambiarTipoCategoria(id, nuevoTipo) {
+        try {
+            await this.storage.actualizarCategoria(id, 'tipo', nuevoTipo);
+            this.actualizarCategoriasUI();
+            this.actualizarCategoriasSelect();
+            this.actualizarCategoriasFiltro();
+        } catch (error) {
+            console.error('Error al cambiar tipo:', error);
+            alert('Error al cambiar el tipo de categoría');
+        }
     }
 
-    agregarNuevaCategoria() {
+    async agregarNuevaCategoria() {
         const nombre = document.getElementById('nuevaCategoria').value.trim();
         const tipo = document.getElementById('tipoCategoria').value;
 
@@ -913,14 +971,19 @@ class AppPanaderia {
             return;
         }
 
-        this.storage.agregarCategoria(nombre, tipo);
-        document.getElementById('nuevaCategoria').value = '';
-        this.actualizarCategoriasUI();
-        this.actualizarCategoriasSelect();
-        this.actualizarCategoriasFiltro();
+        try {
+            await this.storage.agregarCategoria(nombre, tipo);
+            document.getElementById('nuevaCategoria').value = '';
+            this.actualizarCategoriasUI();
+            this.actualizarCategoriasSelect();
+            this.actualizarCategoriasFiltro();
+        } catch (error) {
+            console.error('Error al agregar categoría:', error);
+            alert('Error al agregar la categoría');
+        }
     }
 
-    eliminarCategoria(id) {
+    async eliminarCategoria(id) {
         const data = this.storage.getData();
         const categoria = data.categorias.find(c => c.id === id);
 
@@ -936,14 +999,19 @@ class AppPanaderia {
         }
 
         if (confirm(`¿Eliminar la categoría "${categoria.nombre}"?`)) {
-            const resultado = this.storage.eliminarCategoria(id);
-            if (resultado) {
-                this.actualizarCategoriasUI();
-                this.actualizarCategoriasSelect();
-                this.actualizarCategoriasFiltro();
-                alert('Categoría eliminada exitosamente');
-            } else {
-                alert('No se pudo eliminar la categoría');
+            try {
+                const resultado = await this.storage.eliminarCategoria(id);
+                if (resultado) {
+                    this.actualizarCategoriasUI();
+                    this.actualizarCategoriasSelect();
+                    this.actualizarCategoriasFiltro();
+                    alert('Categoría eliminada exitosamente');
+                } else {
+                    alert('No se pudo eliminar la categoría');
+                }
+            } catch (error) {
+                console.error('Error al eliminar categoría:', error);
+                alert('Error al eliminar la categoría');
             }
         }
     }
