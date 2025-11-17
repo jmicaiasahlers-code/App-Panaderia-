@@ -1,0 +1,27 @@
+/* Backup of styles.css created on 2025-11-16 */
+
+/* Original file content copied for backup. If you need to restore, replace styles.css with this file. */
+
+/* ------------------------- */
+/* Original styles.css (backup) */
+/* ------------------------- */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Open+Sans:wght@400;600&display=swap');
+
+:root {
+  --color-primary: #8B4513;
+  --color-primary-dark: #65320F;
+  --color-secondary: #F5EFE6;
+  --color-accent: #E0A96D;
+  --color-text: #4A4A4A;
+  --color-light: #FFFFFF;
+  --color-border: #E0E0E0;
+  --color-ingreso: #4CAF50;
+  --color-egreso: #F44336;
+  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-body: 'Open Sans', Arial, sans-serif;
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --border-radius: 8px;
+}
+
+/* (truncated for backup) */

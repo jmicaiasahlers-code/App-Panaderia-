@@ -1,0 +1,252 @@
+/* Cleaned and consolidated styles.css
+   - Backup created as styles_backup_20251116.css
+   - This file provides the main UI rules for the bakery app
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Open+Sans:wght@400;600&display=swap');
+
+:root{
+  --color-primary:#919599;
+  --color-primary-dark:#65320F;
+  --color-secondary:#F5EFE6;
+  --color-accent:#E0A96D;
+  --color-text:#4A4A4A;
+  --color-light:#FFFFFF;
+  --color-border:#E0E0E0;
+  --color-ingreso:#4CAF50;
+  --color-egreso:#F44336;
+  --font-heading:'Playfair Display', Georgia, serif;
+  --font-body:'Open Sans', Arial, sans-serif;
+  --shadow-card:0 4px 12px rgba(0,0,0,0.05);
+  --border-radius:8px;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --color-primary:#5a5e62;
+  --color-primary-dark:#404347;
+  --color-secondary:#1a1a1a;
+  --color-accent:#b8884d;
+  --color-text:#e0e0e0;
+  --color-light:#2d2d2d;
+  --color-border:#404040;
+  --color-ingreso:#66bb6a;
+  --color-egreso:#ef5350;
+  --shadow-card:0 4px 12px rgba(0,0,0,0.3);
+}
+
+[data-theme="dark"] body {
+  background:#121212;
+  color:var(--color-text);
+}
+
+[data-theme="dark"] .navbar {
+  background:#1e1e1e;
+}
+
+[data-theme="dark"] .navbar-brand .brand-text h1 {
+  color:#ffffff;
+  text-shadow:0 0 10px rgba(184,136,77,0.5);
+}
+
+[data-theme="dark"] .nav-link {
+  color:#ffffff;
+  text-shadow:0 0 8px rgba(184,136,77,0.3);
+}
+
+[data-theme="dark"] .nav-link:hover {
+  text-shadow:0 0 12px rgba(184,136,77,0.6);
+}
+
+[data-theme="dark"] .nav-link.active {
+  text-shadow:none;
+}
+
+[data-theme="dark"] tbody tr:hover {
+  background:rgba(255,255,255,0.05);
+}
+
+[data-theme="dark"] thead th {
+  background:transparent;
+}
+
+[data-theme="dark"] .categoria-item {
+  background:rgba(255,255,255,0.02);
+}
+
+[data-theme="dark"] .categoria-item:hover {
+  background:rgba(255,255,255,0.05);
+}
+
+/* Base reset */
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:var(--font-body);
+  background:var(--color-secondary);
+  color:var(--color-text);
+  -webkit-font-smoothing:antialiased;
+}
+
+/* Layout */
+.container{display:grid;grid-template-columns:280px 1fr;height:100vh}
+.main-content{padding:2rem;overflow:auto;background:transparent}
+
+/* Navbar */
+.navbar{background:var(--color-primary);color:var(--color-light);padding:1.5rem;display:flex;flex-direction:column;height:100vh}
+.navbar-brand{display:flex;flex-direction:column;align-items:center;gap:4px;padding:0.5rem 0 0.75rem 0;border-bottom:1px solid rgba(255,255,255,0.08)}
+.navbar-brand .brand-text{min-width:0;width:100%;text-align:center;overflow-wrap:break-word}
+.navbar-brand .brand-text h1{margin:0;padding:0;font-family:var(--font-heading);color:var(--color-light);font-size:2rem;line-height:1;word-break:break-word}
+.navbar-brand .brand-text p{margin:0;padding:0;font-size:0.65rem;color:var(--color-accent)}
+
+.navbar-logo{max-height:200px;width:auto;display:block;margin-top:auto}
+
+.nav-menu{list-style:none;margin:1.25rem 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.nav-link{display:flex;align-items:center;gap:12px;padding:0.8rem 0.9rem;color:var(--color-light);font-weight:600;border-radius:6px}
+.nav-link i{width:22px;text-align:center}
+.nav-link:hover{background:var(--color-primary-dark);cursor:pointer}
+.nav-link.active{background:var(--color-accent);color:var(--color-primary)}
+
+/* Modules toggled by JS */
+.module{display:none}
+.module.active{display:block}
+
+/* Cards and common components */
+.card,.form-card,.table-card,.chart-container,.chart-box,.table-box{background:var(--color-light);padding:1.25rem;border-radius:var(--border-radius);box-shadow:var(--shadow-card)}
+.card{margin-bottom:1.25rem}
+
+.dashboard-filters{display:flex;gap:0.75rem;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap}
+.dashboard-filters label{font-weight:700;color:var(--color-primary)}
+.dashboard-filters select,.dashboard-filters input{min-width:180px}
+
+.dashboard-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem}
+.metric{display:flex;align-items:center;gap:1rem;padding:0.75rem}
+.metric-icon{font-size:1.8rem;color:var(--color-primary)}
+.metric h3{margin:0;font-size:0.95rem;font-weight:700}
+.metric-value{font-size:1.5rem;font-weight:800;margin-left:auto;color:var(--color-ingreso)}
+.metric-value.egresos{color:var(--color-egreso)}
+.metric-value.ganancia{color:var(--color-primary)}
+
+/* Forms */
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;margin-bottom:0.5rem;font-weight:700;color:var(--color-primary)}
+input[type="text"],input[type="number"],input[type="date"],select,textarea{width:100%;padding:0.6rem 0.8rem;border:1px solid var(--color-border);border-radius:6px;font-size:0.95rem}
+input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 3px rgba(139,69,19,0.08);border-color:var(--color-primary)}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:0.6rem 1rem;border-radius:6px;border:none;font-weight:700;cursor:pointer;transition:all 0.2s}
+.btn-primary{background:var(--color-primary);color:var(--color-light)}
+.btn-primary:hover{background:var(--color-primary-dark)}
+.btn-secondary{background:var(--color-accent);color:var(--color-primary)}
+.btn-danger{background:var(--color-egreso);color:#fff}
+
+/* Theme toggle button */
+.theme-toggle{background:transparent;border:none;color:var(--color-light);font-size:1.2rem;cursor:pointer;padding:0.5rem;border-radius:6px;transition:all 0.2s;margin-top:0.75rem;width:100%;text-align:center}
+.theme-toggle:hover{background:rgba(255,255,255,0.1)}
+
+/* Registros layout */
+.registros-container{display:grid;grid-template-columns:320px 1fr;gap:1rem}
+.filtros{display:flex;gap:0.75rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap}
+.filtros input,.filtros select{flex:1}
+.monto-ingreso{color:var(--color-ingreso);font-weight:800}
+.monto-egreso{color:var(--color-egreso);font-weight:800}
+
+/* Column toggle */
+.column-toggle-menu{position:relative}
+.column-toggle-dropdown{position:absolute;top:100%;right:0;background:var(--color-light);border:1px solid var(--color-border);border-radius:6px;padding:0.75rem;margin-top:0.25rem;box-shadow:var(--shadow-card);z-index:1000;min-width:180px}
+.column-toggle-dropdown label{display:block;margin-bottom:0.5rem;cursor:pointer;font-weight:normal;color:var(--color-text)}
+.column-toggle-dropdown label:hover{color:var(--color-primary)}
+.column-toggle-dropdown input[type="checkbox"]{margin-right:0.5rem}
+
+/* Parametros */
+.parametros-container{display:grid;grid-template-columns:1fr 320px;gap:1rem}
+.categorias-grid{display:grid;gap:0.5rem;margin-top:1rem}
+.categoria-item{display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0.8rem;background:transparent;border-radius:6px}
+.categoria-item .categoria-nombre{font-weight:700}
+.categoria-item .categoria-tipo{font-size:0.85rem;color:#666}
+
+/* Tables */
+table{width:100%;border-collapse:collapse}
+thead th{background:transparent;color:var(--color-primary);text-align:left;padding:0.7rem;border-bottom:1px solid var(--color-border)}
+tbody td{padding:0.6rem 0.8rem;border-bottom:1px solid var(--color-border)}
+tbody tr:hover{background:rgba(0,0,0,0.02)}
+
+/* Analytics */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}
+.stat-card h4{margin:0 0 0.5rem 0}
+.stat-value{font-size:1.6rem;font-weight:800;color:var(--color-ingreso)}
+.stat-value.egresos{color:var(--color-egreso)}
+
+/* Missing/adjacent analytics layout helpers used in HTML */
+.analisis-container{display:block;gap:1rem}
+.filtros-analisis{display:flex;gap:0.75rem;align-items:flex-end;margin-bottom:1rem;flex-wrap:wrap}
+.filtros-analisis .form-group{margin:0 0.5rem 0 0}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0}
+.tipo-badge{display:inline-block;padding:0.4rem 0.6rem;border-radius:6px;background:var(--color-accent);color:var(--color-primary);font-weight:700}
+.tipos-grid{display:flex;gap:0.5rem;flex-wrap:wrap}
+.info-text{font-size:0.9rem;color:#666;margin-top:0.5rem}
+.stat-value.ganancia{color:var(--color-primary)}
+
+/* Mobile hamburger menu */
+.hamburger-menu{display:none;background:transparent;border:none;color:var(--color-light);font-size:1.5rem;cursor:pointer;padding:0.5rem}
+.hamburger-menu:hover{background:rgba(255,255,255,0.1);border-radius:6px}
+
+/* Responsive */
+@media (max-width:900px){
+  .container{grid-template-columns:1fr;grid-auto-rows:auto;height:auto;padding:0}
+  
+  .navbar{height:auto;flex-direction:column;padding:0.5rem;position:relative}
+  .navbar-brand{width:100%;display:flex;justify-content:space-between;align-items:center;flex-direction:row;margin-bottom:0}
+  .navbar-brand .brand-text h1{font-size:1.2rem;margin:0}
+  .navbar-brand .logo{max-height:45px;position:absolute;left:50%;transform:translateX(-50%)}
+  
+  .hamburger-menu{display:block;order:3}
+  .theme-toggle{position:absolute;right:3.5rem;top:0.5rem;margin:0;width:auto}
+  
+  .nav-menu{width:100%;flex-direction:column;gap:0;margin:0.5rem 0 0 0;padding:0;max-height:0;overflow:hidden;transition:max-height 0.3s ease}
+  .nav-menu.active{max-height:300px}
+  .nav-link{padding:0.75rem 1rem;width:100%;justify-content:flex-start;border-radius:6px}
+  .nav-link i{width:1.5rem}
+  
+  .main-content{padding:1rem}
+  .registros-container,.parametros-container{grid-template-columns:1fr}
+  .charts-grid{grid-template-columns:1fr}
+  
+  .filtros,.dashboard-filters{flex-direction:column;align-items:stretch}
+  .filtros input,.filtros select,.dashboard-filters select,.dashboard-filters input{min-width:100%}
+  
+  table{font-size:0.85rem}
+  thead th,tbody td{padding:0.5rem 0.4rem}
+  .btn{padding:0.5rem 0.75rem;font-size:0.9rem}
+}
+
+@media (max-width:600px){
+  .dashboard-grid{grid-template-columns:1fr}
+  .metric{flex-direction:column;align-items:flex-start;text-align:left}
+  .metric-value{font-size:1.8rem;margin-left:0;margin-top:0.5rem}
+  .metric-icon{font-size:2rem}
+  
+  .navbar-brand .brand-text h1{font-size:1rem}
+  .navbar-brand .logo{max-height:35px}
+  
+  /* Hacer tabla scrolleable horizontalmente */
+  .table-card{overflow-x:auto}
+  table{min-width:600px}
+  
+  /* Optimizar formularios para móvil */
+  input[type="text"],input[type="number"],input[type="date"],input[type="month"],select,textarea{
+    font-size:16px;  /* Previene zoom en iOS */
+    padding:0.75rem
+  }
+  
+  /* Mejorar botones touch-friendly */
+  .btn{min-height:44px;justify-content:center}
+  
+  .stats-grid{grid-template-columns:1fr}
+  .filtros-analisis{flex-direction:column}
+  .filtros-analisis .form-group{width:100%;margin:0 0 0.5rem 0}
+  .main-content{padding:1rem}
+}
+
+/* End of cleaned styles.css */

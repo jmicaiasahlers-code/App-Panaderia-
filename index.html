@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Panadería 18 - Sistema de Gestión</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- NAVBAR -->
+        <nav class="navbar">
+            <div class="navbar-brand">
+                <div class="brand-text">
+                    <h1>Sistema de Gestion</h1>
+                </div>
+                <button id="hamburger-menu" class="hamburger-menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="#" data-module="dashboard" class="nav-link active"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                <li><a href="#" data-module="registros" class="nav-link"><i class="fas fa-receipt"></i> Registros</a></li>
+                <li><a href="#" data-module="parametros" class="nav-link"><i class="fas fa-cog"></i> Parámetros</a></li>
+                <li><a href="#" data-module="analisis" class="nav-link"><i class="fas fa-chart-bar"></i> Análisis</a></li>
+            </ul>
+            <img src="logo.svg" alt="Logo Panadería 18" class="logo navbar-logo">
+            <button id="theme-toggle" class="theme-toggle" title="Cambiar tema">
+                <i class="fas fa-moon"></i>
+            </button>
+        </nav>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <!-- DASHBOARD -->
+            <section id="dashboard" class="module active">
+                <h2><i class="fas fa-chart-line"></i> Dashboard</h2>
+                <div class="dashboard-filters">
+                    <label for="filtroDashboardMes"><i class="fas fa-calendar"></i> Filtrar por:</label>
+                    <select id="filtroDashboardMes">
+                        <option value="hoy">Hoy</option>
+                        <option value="mes-actual" selected>Mes Actual</option>
+                        <option value="mes-personalizado">Mes Personalizado</option>
+                        <option value="año-actual">Año Actual</option>
+                        <option value="año-personalizado">Año Personalizado</option>
+                    </select>
+                    <input type="month" id="dashboardMesPersonalizado" style="display:none;">
+                    <input type="number" id="dashboardAñoPersonalizado" min="2020" max="2100" placeholder="Año" style="display:none;">
+                    <button id="btnAplicarFiltroDashboard" class="btn btn-primary" style="display:none;"><i class="fas fa-filter"></i> Aplicar</button>
+                </div>
+                <div class="dashboard-grid">
+                    <div class="card metric">
+                        <div class="metric-icon"><i class="fas fa-arrow-up"></i></div>
+                        <h3>Ingresos Hoy</h3>
+                        <p class="metric-value" id="ingresos-hoy">$0.00</p>
+                    </div>
+                    <div class="card metric">
+                        <div class="metric-icon"><i class="fas fa-arrow-down"></i></div>
+                        <h3>Egresos Hoy</h3>
+                        <p class="metric-value egresos" id="egresos-hoy">$0.00</p>
+                    </div>
+                    <div class="card metric">
+                        <div class="metric-icon"><i class="fas fa-coins"></i></div>
+                        <h3>Ganancia Neta Hoy</h3>
+                        <p class="metric-value ganancia" id="ganancia-hoy">$0.00</p>
+                    </div>
+                    <div class="card metric">
+                        <div class="metric-icon"><i class="fas fa-calendar-alt"></i></div>
+                        <h3>Total Este Mes</h3>
+                        <p class="metric-value" id="total-mes">$0.00</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartHoy"></canvas>
+                </div>
+            </section>
+
+            <!-- REGISTROS -->
+            <section id="registros" class="module">
+                <h2><i class="fas fa-receipt"></i> Registro de Ingresos y Egresos</h2>
+                <div class="registros-container">
+                    <div class="form-card">
+                        <h3><i class="fas fa-plus-circle"></i> Nuevo Registro</h3>
+                        <form id="formRegistro">
+                            <div class="form-group">
+                                <label for="tipo"><i class="fas fa-exchange-alt"></i> Tipo:</label>
+                                <select id="tipo" required>
+                                    <option value="">Seleccionar tipo...</option>
+                                    <option value="ingreso">Ingreso</option>
+                                    <option value="egreso">Egreso</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="categoria"><i class="fas fa-list"></i> Categoría:</label>
+                                <select id="categoria" required>
+                                    <option value="">Seleccionar categoría...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="descripcion"><i class="fas fa-align-left"></i> Descripción:</label>
+                                <input type="text" id="descripcion" placeholder="Descripción del movimiento">
+                            </div>
+                            <div class="form-group">
+                                <label for="monto"><i class="fas fa-dollar-sign"></i> Monto:</label>
+                                <input type="number" id="monto" placeholder="0.00" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="fecha"><i class="fas fa-calendar-day"></i> Fecha:</label>
+                                <input type="date" id="fecha" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar Registro</button>
+                        </form>
+                    </div>
+                    <div class="table-card">
+                        <h3><i class="fas fa-history"></i> Registros Recientes</h3>
+                        <div class="filtros">
+                            <input type="date" id="filtroFecha" placeholder="Filtrar por fecha">
+                            <select id="filtroTipo">
+                                <option value="">Todos los tipos</option>
+                                <option value="ingreso">Ingresos</option>
+                                <option value="egreso">Egresos</option>
+                            </select>
+                            <select id="filtroCategoria">
+                                <option value="">Todas las categorías</option>
+                            </select>
+                            <div class="column-toggle-menu">
+                                <button class="btn btn-secondary" id="btnToggleColumns" title="Mostrar/Ocultar columnas">
+                                    <i class="fas fa-columns"></i>
+                                </button>
+                                <div class="column-toggle-dropdown" id="columnToggleDropdown" style="display:none;">
+                                    <label><input type="checkbox" data-column="fecha" checked> Fecha</label>
+                                    <label><input type="checkbox" data-column="tipo" checked> Tipo</label>
+                                    <label><input type="checkbox" data-column="categoria" checked> Categoría</label>
+                                    <label><input type="checkbox" data-column="descripcion" checked> Descripción</label>
+                                    <label><input type="checkbox" data-column="monto" checked> Monto</label>
+                                </div>
+                            </div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Tipo</th>
+                                    <th>Categoría</th>
+                                    <th>Descripción</th>
+                                    <th>Monto</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="registrosTable">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PARÁMETROS -->
+            <section id="parametros" class="module">
+                <h2><i class="fas fa-cog"></i> Parametrización de Categorías y Tipos</h2>
+                <div class="parametros-container">
+                    <div class="card">
+                        <h3><i class="fas fa-tags"></i> Gestionar Categorías</h3>
+                        <div class="form-group">
+                            <input type="text" id="nuevaCategoria" placeholder="Nueva categoría">
+                            <select id="tipoCategoria">
+                                <option value="ingreso">Ingreso</option>
+                                <option value="egreso">Egreso</option>
+                            </select>
+                            <button class="btn btn-secondary" id="btnAgregarCategoria"><i class="fas fa-plus"></i> Agregar Categoría</button>
+                        </div>
+                        <div class="categorias-lista">
+                            <h4><i class="fas fa-arrow-up"></i> Categorías de Ingresos</h4>
+                            <div id="categoriasIngreso" class="categorias-grid"></div>
+                            <h4><i class="fas fa-arrow-down"></i> Categorías de Egresos</h4>
+                            <div id="categoriasEgreso" class="categorias-grid"></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3><i class="fas fa-exchange-alt"></i> Gestionar Tipos de Movimiento</h3>
+                        <div class="form-group">
+                            <input type="text" id="nuevoTipo" placeholder="Nuevo tipo" disabled>
+                            <p class="info-text">Los tipos son: Ingreso y Egreso (no se pueden personalizar)</p>
+                        </div>
+                        <h4>Tipos Disponibles:</h4>
+                        <div class="tipos-grid">
+                            <div class="tipo-badge">Ingreso</div>
+                            <div class="tipo-badge">Egreso</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ANÁLISIS -->
+            <section id="analisis" class="module">
+                <h2><i class="fas fa-chart-bar"></i> Análisis de Datos</h2>
+                <div class="analisis-container">
+                    <div class="filtros-analisis">
+                        <div class="form-group">
+                            <label for="fechaInicio"><i class="fas fa-calendar-day"></i> Fecha Inicio:</label>
+                            <input type="date" id="fechaInicio">
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaFin"><i class="fas fa-calendar-day"></i> Fecha Fin:</label>
+                            <input type="date" id="fechaFin">
+                        </div>
+                        <button class="btn btn-primary" id="btnActualizarAnalisis"><i class="fas fa-sync-alt"></i> Actualizar</button>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="card stat-card">
+                            <h4><i class="fas fa-arrow-up"></i> Total Ingresos</h4>
+                            <p id="totalIngresos" class="stat-value">$0.00</p>
+                        </div>
+                        <div class="card stat-card">
+                            <h4><i class="fas fa-arrow-down"></i> Total Egresos</h4>
+                            <p id="totalEgresos" class="stat-value egresos">$0.00</p>
+                        </div>
+                        <div class="card stat-card">
+                            <h4><i class="fas fa-coins"></i> Ganancia Neta</h4>
+                            <p id="gananciaTotal" class="stat-value ganancia">$0.00</p>
+                        </div>
+                        <div class="card stat-card">
+                            <h4><i class="fas fa-calendar-alt"></i> Promedio Diario</h4>
+                            <p id="promedioDiario" class="stat-value">$0.00</p>
+                        </div>
+                    </div>
+                    <div class="charts-grid">
+                        <div class="chart-box">
+                            <h4><i class="fas fa-balance-scale"></i> Ingresos vs Egresos</h4>
+                            <canvas id="chartComparacion"></canvas>
+                        </div>
+                        <div class="chart-box">
+                            <h4><i class="fas fa-chart-pie"></i> Distribución por Categoría</h4>
+                            <canvas id="chartCategorias"></canvas>
+                        </div>
+                        <div class="chart-box" style="grid-column: 1 / -1;">
+                            <h4><i class="fas fa-chart-line"></i> Tendencia Diaria</h4>
+                            <canvas id="chartTendencia"></canvas>
+                        </div>
+                    </div>
+                    <div class="table-box">
+                        <h4><i class="fas fa-table"></i> Detalle por Categoría</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Categoría</th>
+                                    <th>Tipo</th>
+                                    <th>Cantidad</th>
+                                    <th>Total</th>
+                                    <th>Promedio</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaDetalleAnalisis">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
